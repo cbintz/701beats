@@ -20,10 +20,19 @@ b = list()
 mfcc_originals = list() #for plotting
 chroma_originals = list() #for plotting
 
-#Song Data: B[i][0]
-#Tempo: B[i][1]
-#Chroma: B[i][2]
-#MFCC: B[i][3]
+
+#Song filepath: B[i][0]
+#Raw Song: B[i][1]
+#Song_harmonic: B[i][2]
+#Song_percussive: B[i][3]
+#Tempo: B[i][4]
+#Chromagram: B[i][5]
+#mfcc1: B[i][6]
+#beat features: B[i][7]
+#beat chroma: B[i][8]
+#chroma_cq: B[i][9]
+#mfcc2: B[i][10]
+
 
 fs = 44100
 for i in range(0,len(audio_files)):
@@ -31,6 +40,7 @@ for i in range(0,len(audio_files)):
     #create list to store song data
     song_data = list()
     b.append(song_data)
+    b[i].append(audio_files[i])
 
     #create unique song tag
     song = 'song' + str(i)
@@ -38,44 +48,80 @@ for i in range(0,len(audio_files)):
     #load the song data
     song, sr = librosa.load(audio_files[i], duration = 30)
 
+    #set hop length
+    hop_length = 512
+
+    #separate song into harmonic and percussive components
+    song_harmonic, song_percussive = librosa.effects.hpss(song)
+
+    #beat track on the percussive signal
+    tempo, beat_frames = librosa.beat.beat_track(y=song_percussive,
+                                                 sr=sr)
+
+    # compute mfcc features from the raw signal
+    mfcc1 = librosa.feature.mfcc(y=song, sr=sr, hop_length=hop_length, n_mfcc=13)
+
+    # And the first-order differences (delta features)
+    mfcc_delta = librosa.feature.delta(mfcc1)
+
+    # Stack and synchronize between beat events
+    # This time, we'll use the mean value (default) instead of median
+    beat_mfcc_delta = librosa.util.sync(np.vstack([mfcc1, mfcc_delta]),
+                                        beat_frames)
+
+
+    #calculate a chromagram from the harmonic component
+    chromagram = librosa.feature.chroma_cqt(y=song_harmonic,
+                                            sr=sr)
+
+    #synchronize chroma and beat frames (beat events)
+    beat_chroma = librosa.util.sync(chromagram,
+                                    beat_frames,
+                                    aggregate=np.median)
+
+    # Finally, stack all beat-synchronous features together
+    beat_features = np.vstack([beat_chroma, beat_mfcc_delta])
+
     #add the song to the song data list
     b[i].append(song)
-
-    #extract beat and add to feature list
-    onset_env = librosa.onset.onset_strength(b[i][0], sr=sr)
-    tempo = librosa.beat.tempo(onset_envelope=onset_env, sr=sr)
+    b[i].append(song_harmonic)
+    b[i].append(song_percussive)
     b[i].append(tempo)
+    b[i].append(chromagram)
+    b[i].append(mfcc1)
+    b[i].append(beat_features)
+    b[i].append(beat_chroma)
 
     #extract chroma feature and add to feature list
-    chroma_cq_og = np.array(librosa.feature.chroma_cqt(b[i][0], sr=sr))
+    chroma_cq_og = np.array(librosa.feature.chroma_cqt(b[i][1], sr=sr))
     chroma_originals.append(chroma_cq_og)
     chroma_cq = chroma_cq_og.reshape(15504)
     b[i].append(chroma_cq)
 
     #extract mfccs and add to feature list
-    mfcc_og = np.array(librosa.feature.mfcc(b[i][0], sr=sr))
+    mfcc_og = np.array(librosa.feature.mfcc(b[i][1], sr=sr))
     mfcc_originals.append(mfcc_og)
     # feature scaling made clusters more inaccurate, commenting out for now
     # scaler = MinMaxScaler(feature_range = (-1, 1))
     # scaler.fit(mfcc)
     # mfcc_scale = scaler.transform(mfcc)
     # mfcc_scale = mfcc_scale.reshape(25840)
-    mfcc = mfcc_og.reshape(25840)
+    mfcc2 = mfcc_og.reshape(25840)
     # b[i].append(mfcc_scale)
-    b[i].append(mfcc)
+    b[i].append(mfcc2)
 
 mfcc_total = []
 for i in range(len(b)):
-    mfcc_total.append(b[i][3])
+    mfcc_total.append(b[i][10])
 
 tempo_total = []
 for i in range(len(b)):
-    tempo_total.append(b[i][1])
+    tempo_total.append(b[i][4])
 tempo_total = np.array(tempo_total)
 
 chroma_total = []
 for i in range(len(b)):
-    chroma_total.append(b[i][2])
+    chroma_total.append(b[i][9])
 
 #kmeans with mfcc
 kmeans = KMeans(n_clusters=3, max_iter=100).fit(mfcc_total)
@@ -85,10 +131,10 @@ print("mfcc cluster 3:", np.where(kmeans.labels_ == 2)[0]) #shows song indices i
 
 
 #kmeans with tempo
-kmeans2 = KMeans(n_clusters=3, max_iter=100).fit(tempo_total)
-print("tempo cluster 1:", np.where(kmeans2.labels_ == 0)[0]) #shows song indices in cluster 0
-print("tempo cluster 2:", np.where(kmeans2.labels_ == 1)[0]) #shows song indices in cluster 1
-print("tempo cluster 3:", np.where(kmeans2.labels_ == 2)[0]) #shows song indices in cluster 2
+#kmeans2 = KMeans(n_clusters=3, max_iter=100).fit(tempo_total)
+#print("tempo cluster 1:", np.where(kmeans2.labels_ == 0)[0]) #shows song indices in cluster 0
+#print("tempo cluster 2:", np.where(kmeans2.labels_ == 1)[0]) #shows song indices in cluster 1
+#print("tempo cluster 3:", np.where(kmeans2.labels_ == 2)[0]) #shows song indices in cluster 2
 
 #kmeans with chroma
 kmeans3 = KMeans(n_clusters=3, max_iter=100).fit(chroma_total)
