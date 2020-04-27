@@ -36,7 +36,6 @@ chroma_originals = list() #for plotting
 
 fs = 44100
 for i in range(0,len(audio_files)):
-
     #create list to store song data
     song_data = list()
     b.append(song_data)
@@ -57,6 +56,7 @@ for i in range(0,len(audio_files)):
     #beat track on the percussive signal
     tempo, beat_frames = librosa.beat.beat_track(y=song_percussive,
                                                  sr=sr)
+    tempo = [tempo]
 
     # compute mfcc features from the raw signal
     mfcc1 = librosa.feature.mfcc(y=song, sr=sr, hop_length=hop_length, n_mfcc=13)
@@ -119,6 +119,7 @@ for i in range(len(b)):
     tempo_total.append(b[i][4])
 tempo_total = np.array(tempo_total)
 
+
 chroma_total = []
 for i in range(len(b)):
     chroma_total.append(b[i][9])
@@ -131,10 +132,10 @@ print("mfcc cluster 3:", np.where(kmeans.labels_ == 2)[0]) #shows song indices i
 
 
 #kmeans with tempo
-#kmeans2 = KMeans(n_clusters=3, max_iter=100).fit(tempo_total)
-#print("tempo cluster 1:", np.where(kmeans2.labels_ == 0)[0]) #shows song indices in cluster 0
-#print("tempo cluster 2:", np.where(kmeans2.labels_ == 1)[0]) #shows song indices in cluster 1
-#print("tempo cluster 3:", np.where(kmeans2.labels_ == 2)[0]) #shows song indices in cluster 2
+kmeans2 = KMeans(n_clusters=3, max_iter=100).fit(tempo_total)
+print("tempo cluster 1:", np.where(kmeans2.labels_ == 0)[0]) #shows song indices in cluster 0
+print("tempo cluster 2:", np.where(kmeans2.labels_ == 1)[0]) #shows song indices in cluster 1
+print("tempo cluster 3:", np.where(kmeans2.labels_ == 2)[0]) #shows song indices in cluster 2
 
 #kmeans with chroma
 kmeans3 = KMeans(n_clusters=3, max_iter=100).fit(chroma_total)
