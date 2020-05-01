@@ -12,10 +12,6 @@ from sklearn.cluster import KMeans
 
 audio_files = glob.glob('./audio/*.wav')
 
-# 0, 3, 8 = rap
-# 1, 4, 6 = edm
-# 2, 5, 7 = pop
-
 b = list()
 mfcc_originals = list() #for plotting
 chroma_originals = list() #for plotting
@@ -36,7 +32,6 @@ chroma_originals = list() #for plotting
 
 fs = 44100
 for i in range(0,len(audio_files)):
-
     #create list to store song data
     song_data = list()
     b.append(song_data)
@@ -57,6 +52,7 @@ for i in range(0,len(audio_files)):
     #beat track on the percussive signal
     tempo, beat_frames = librosa.beat.beat_track(y=song_percussive,
                                                  sr=sr)
+    tempo = [tempo]
 
     # compute mfcc features from the raw signal
     mfcc1 = librosa.feature.mfcc(y=song, sr=sr, hop_length=hop_length, n_mfcc=13)
@@ -119,69 +115,47 @@ for i in range(len(b)):
     tempo_total.append(b[i][4])
 tempo_total = np.array(tempo_total)
 
+
 chroma_total = []
 for i in range(len(b)):
     chroma_total.append(b[i][9])
 
 #kmeans with mfcc
-kmeans = KMeans(n_clusters=3, max_iter=100).fit(mfcc_total)
-print("mfcc cluster 1:", np.where(kmeans.labels_ == 0)[0]) #shows song indices in cluster 0
-print("mfcc cluster 2:", np.where(kmeans.labels_ == 1)[0]) #shows song indices in cluster 1
-print("mfcc cluster 3:", np.where(kmeans.labels_ == 2)[0]) #shows song indices in cluster 2
+kmeans = KMeans(n_clusters=6, max_iter=100).fit(mfcc_total)
+for j in range(6):
+    print("mfcc cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans.labels_ == j)[0])):
+        song_index = np.where(kmeans.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end = "\n")
 
 
 #kmeans with tempo
-#kmeans2 = KMeans(n_clusters=3, max_iter=100).fit(tempo_total)
-#print("tempo cluster 1:", np.where(kmeans2.labels_ == 0)[0]) #shows song indices in cluster 0
-#print("tempo cluster 2:", np.where(kmeans2.labels_ == 1)[0]) #shows song indices in cluster 1
-#print("tempo cluster 3:", np.where(kmeans2.labels_ == 2)[0]) #shows song indices in cluster 2
+kmeans2 = KMeans(n_clusters=6, max_iter=100).fit(tempo_total)
+for j in range(6):
+    print("tempo cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans2.labels_ == j)[0])):
+        song_index = np.where(kmeans2.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
+
+
 
 #kmeans with chroma
-kmeans3 = KMeans(n_clusters=3, max_iter=100).fit(chroma_total)
-print("chroma cluster 1:", np.where(kmeans3.labels_ == 0)[0]) #shows song indices in cluster 0
-print("chroma cluster 2:", np.where(kmeans3.labels_ == 1)[0]) #shows song indices in cluster 1
-print("chroma cluster 3:", np.where(kmeans3.labels_ == 2)[0]) #shows song indices in cluster 2
+kmeans3 = KMeans(n_clusters=6, max_iter=100).fit(chroma_total)
+for j in range(6):
+    print("chroma cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans3.labels_ == j)[0])):
+        song_index = np.where(kmeans3.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
 
-
-
-#feature scaling: didn't really help and made weird arrays, but keeping here in case we want to revisit
-
-#print(b[0][3])
-# mfccs = b[0][3]
-# mfccs = sklearn.preprocessing.scale(mfccs, axis=1)
-# # print (mfccs.mean(axis=1))
-# # print (mfccs.var(axis=1))
-# # print(mfccs)
-# song, sr = librosa.load(audio_files[0], offset = 10, duration = 30)
-# plt.figure(figsize=(10, 4))
-# librosa.display.specshow(mfccs, sr=sr, x_axis='time')
-# plt.colorbar()
-# plt.title('MFCC')
-# plt.tight_layout()
-# plt.show()
-
-# song, sr = librosa.load(audio_files[i])
-# librosa.onset.onset_detect(song, sr=sr)
-# tempo, beats = librosa.beat.beat_track(song, sr=sr)
-# beat_times = librosa.frames_to_time(beats, sr=sr)
-# onset_samples = librosa.frames_to_samples(beats)
-#
-# def extract_features(x, fs):
-#     feature_1 = librosa.feature.mfcc(x, sr=fs)
-#     return [feature_1]
-#
-# frame_sz = int(sr*0.100)
-# # for i in range(len(onset_samples)):
-# #     onset_samples[i] = int(onset_samples[i])
-# features = np.array([extract_features(song[i:i+frame_sz], sr) for i in onset_samples])
-# print(features.shape)
-# features = features.reshape(59,100)
-#
-#
-# #print(features)
-# scaler = MinMaxScaler(feature_range = (-1, 1))
-# scaler.fit(features)
-# print(scaler.transform(features))
 
 #plot chroma_cq
 plt.figure()
