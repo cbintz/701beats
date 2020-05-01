@@ -9,12 +9,14 @@ from array import *
 import sklearn
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
+import matplotlib.pyplot as pp
 
 audio_files = glob.glob('./audio/*.wav')
 
 # 0, 3, 8 = rap
 # 1, 4, 6 = edm
 # 2, 5, 7 = pop
+# should make this usable for labels for plots
 
 b = list()
 mfcc_originals = list() #for plotting
@@ -114,28 +116,101 @@ mfcc_total = []
 for i in range(len(b)):
     mfcc_total.append(b[i][10])
 
+mfcc_total = np.array(mfcc_total)
+
 tempo_total = []
 for i in range(len(b)):
     tempo_total.append(b[i][4])
 tempo_total = np.array(tempo_total)
-
+print(tempo_total)
 
 chroma_total = []
 for i in range(len(b)):
     chroma_total.append(b[i][9])
+chroma_total = np.array(chroma_total)
+
+x1 = []
+for i in range(len(b)):
+    x1.append(np.linspace(0, 1, 15504))
+x1 = np.array(x1)
+
+x2 = []
+for i in range(len(b)):
+    x2.append(np.linspace(0, 1, 25840))
+x2 = np.array(x2)
+
+# fig2, ax2 = plt.subplots()
+# ax2.plot(chroma_total, x1)
+# plt.show()
+# plt.plot(mfcc_total, x2)
+
+
+#plt.scatter(mfcc_total, chroma_total)
 
 #kmeans with mfcc
+#visualization: plot with mfcc of each song in each cluster shown? divided into sections per cluster?
 kmeans = KMeans(n_clusters=3, max_iter=100).fit(mfcc_total)
 print("mfcc cluster 1:", np.where(kmeans.labels_ == 0)[0]) #shows song indices in cluster 0
 print("mfcc cluster 2:", np.where(kmeans.labels_ == 1)[0]) #shows song indices in cluster 1
 print("mfcc cluster 3:", np.where(kmeans.labels_ == 2)[0]) #shows song indices in cluster 2
 
+mfcc_songs_cluster1 = np.where(kmeans.labels_ == 0)[0]
+plt.figure(figsize= (20,8 ))
+plt.suptitle('MFCC Cluster 1', fontsize=16)
+for i in range(len(mfcc_songs_cluster1)):
+    plt.subplot(len(mfcc_songs_cluster1),1,i+1)
+    librosa.display.specshow(mfcc_originals[mfcc_songs_cluster1[i]], x_axis='time')
+    subtitle = "MFCC of Song " + str(mfcc_songs_cluster1[i])
+    plt.title(subtitle)
+    plt.colorbar()
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+mfcc_songs_cluster2 = np.where(kmeans.labels_ == 1)[0]
+plt.figure(figsize= (20,8 ))
+plt.suptitle('MFCC Cluster 2', fontsize=16)
+for i in range(len(mfcc_songs_cluster2)):
+    plt.subplot(len(mfcc_songs_cluster2),1,i+1)
+    librosa.display.specshow(mfcc_originals[mfcc_songs_cluster2[i]], x_axis='time')
+    subtitle = "MFCC of Song " + str(mfcc_songs_cluster2[i])
+    plt.title(subtitle)
+    plt.colorbar()
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+mfcc_songs_cluster3 = np.where(kmeans.labels_ == 2)[0]
+plt.figure(figsize= (20,8 ))
+plt.suptitle('MFCC Cluster 3', fontsize=16)
+for i in range(len(mfcc_songs_cluster3)):
+    plt.subplot(len(mfcc_songs_cluster3),1,i+1)
+    librosa.display.specshow(mfcc_originals[mfcc_songs_cluster3[i]], x_axis='time')
+    subtitle = "MFCC of Song " + str(mfcc_songs_cluster3[i])
+    plt.title(subtitle)
+    plt.colorbar()
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 #kmeans with tempo
 kmeans2 = KMeans(n_clusters=3, max_iter=100).fit(tempo_total)
 print("tempo cluster 1:", np.where(kmeans2.labels_ == 0)[0]) #shows song indices in cluster 0
 print("tempo cluster 2:", np.where(kmeans2.labels_ == 1)[0]) #shows song indices in cluster 1
 print("tempo cluster 3:", np.where(kmeans2.labels_ == 2)[0]) #shows song indices in cluster 2
+
+tempoc1y = []
+for i in range(len(tempo_total[kmeans2.labels_ == 0])):
+    tempoc1y.append(2)
+tempoc2y = []
+for i in range(len(tempo_total[kmeans2.labels_ == 1])):
+    tempoc2y.append(2)
+tempoc3y = []
+for i in range(len(tempo_total[kmeans2.labels_ == 2])):
+    tempoc3y.append(2)
+tempoclustery = [2,2,2]
+fig1, ax1 = plt.subplots()
+ax1.scatter(tempo_total[kmeans2.labels_ == 0], tempoc1y, c= 'green')
+ax1.scatter(tempo_total[kmeans2.labels_ == 1], tempoc2y, c= 'blue')
+ax1.scatter(tempo_total[kmeans2.labels_ == 2], tempoc3y, c= 'black')
+ax1.scatter(kmeans2.cluster_centers_, tempoclustery, marker='*', c = 'red')
+ax1.get_yaxis().set_visible(False)
+
+
 
 #kmeans with chroma
 kmeans3 = KMeans(n_clusters=3, max_iter=100).fit(chroma_total)
@@ -186,6 +261,7 @@ print("chroma cluster 3:", np.where(kmeans3.labels_ == 2)[0]) #shows song indice
 
 #plot chroma_cq
 plt.figure()
+plt.suptitle("overall chroma")
 plt.subplot(2,1,1)
 librosa.display.specshow(chroma_originals[0], y_axis='chroma')
 plt.title('chroma_cq1')
