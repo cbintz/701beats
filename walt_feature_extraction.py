@@ -213,7 +213,7 @@ for i in range(len(tempo_total[kmeans2.labels_ == 1])):
 tempoc3y = []
 for i in range(len(tempo_total[kmeans2.labels_ == 2])):
     tempoc3y.append(2)
-tempoclustery = [2,2,2]
+tempoclustery = [2,2,2,2,2,2]
 fig1, ax1 = plt.subplots()
 ax1.scatter(tempo_total[kmeans2.labels_ == 0], tempoc1y, c= 'green')
 ax1.scatter(tempo_total[kmeans2.labels_ == 1], tempoc2y, c= 'blue')
