@@ -148,11 +148,15 @@ x2 = np.array(x2)
 #plt.scatter(mfcc_total, chroma_total)
 
 #kmeans with mfcc
-#visualization: plot with mfcc of each song in each cluster shown? divided into sections per cluster?
-kmeans = KMeans(n_clusters=3, max_iter=100).fit(mfcc_total)
-print("mfcc cluster 1:", np.where(kmeans.labels_ == 0)[0]) #shows song indices in cluster 0
-print("mfcc cluster 2:", np.where(kmeans.labels_ == 1)[0]) #shows song indices in cluster 1
-print("mfcc cluster 3:", np.where(kmeans.labels_ == 2)[0]) #shows song indices in cluster 2
+kmeans = KMeans(n_clusters=6, max_iter=100).fit(mfcc_total)
+for j in range(6):
+    print("mfcc cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans.labels_ == j)[0])):
+        song_index = np.where(kmeans.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end = "\n")
 
 mfcc_songs_cluster1 = np.where(kmeans.labels_ == 0)[0]
 plt.figure(figsize= (20,8 ))
@@ -188,10 +192,17 @@ for i in range(len(mfcc_songs_cluster3)):
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 #kmeans with tempo
-kmeans2 = KMeans(n_clusters=3, max_iter=100).fit(tempo_total)
-print("tempo cluster 1:", np.where(kmeans2.labels_ == 0)[0]) #shows song indices in cluster 0
-print("tempo cluster 2:", np.where(kmeans2.labels_ == 1)[0]) #shows song indices in cluster 1
-print("tempo cluster 3:", np.where(kmeans2.labels_ == 2)[0]) #shows song indices in cluster 2
+kmeans2 = KMeans(n_clusters=6, max_iter=100).fit(tempo_total)
+for j in range(6):
+    print("tempo cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans2.labels_ == j)[0])):
+        song_index = np.where(kmeans2.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
+
+
 
 tempoc1y = []
 for i in range(len(tempo_total[kmeans2.labels_ == 0])):
@@ -213,51 +224,16 @@ ax1.get_yaxis().set_visible(False)
 
 
 #kmeans with chroma
-kmeans3 = KMeans(n_clusters=3, max_iter=100).fit(chroma_total)
-print("chroma cluster 1:", np.where(kmeans3.labels_ == 0)[0]) #shows song indices in cluster 0
-print("chroma cluster 2:", np.where(kmeans3.labels_ == 1)[0]) #shows song indices in cluster 1
-print("chroma cluster 3:", np.where(kmeans3.labels_ == 2)[0]) #shows song indices in cluster 2
+kmeans3 = KMeans(n_clusters=6, max_iter=100).fit(chroma_total)
+for j in range(6):
+    print("chroma cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans3.labels_ == j)[0])):
+        song_index = np.where(kmeans3.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
 
-
-
-#feature scaling: didn't really help and made weird arrays, but keeping here in case we want to revisit
-
-#print(b[0][3])
-# mfccs = b[0][3]
-# mfccs = sklearn.preprocessing.scale(mfccs, axis=1)
-# # print (mfccs.mean(axis=1))
-# # print (mfccs.var(axis=1))
-# # print(mfccs)
-# song, sr = librosa.load(audio_files[0], offset = 10, duration = 30)
-# plt.figure(figsize=(10, 4))
-# librosa.display.specshow(mfccs, sr=sr, x_axis='time')
-# plt.colorbar()
-# plt.title('MFCC')
-# plt.tight_layout()
-# plt.show()
-
-# song, sr = librosa.load(audio_files[i])
-# librosa.onset.onset_detect(song, sr=sr)
-# tempo, beats = librosa.beat.beat_track(song, sr=sr)
-# beat_times = librosa.frames_to_time(beats, sr=sr)
-# onset_samples = librosa.frames_to_samples(beats)
-#
-# def extract_features(x, fs):
-#     feature_1 = librosa.feature.mfcc(x, sr=fs)
-#     return [feature_1]
-#
-# frame_sz = int(sr*0.100)
-# # for i in range(len(onset_samples)):
-# #     onset_samples[i] = int(onset_samples[i])
-# features = np.array([extract_features(song[i:i+frame_sz], sr) for i in onset_samples])
-# print(features.shape)
-# features = features.reshape(59,100)
-#
-#
-# #print(features)
-# scaler = MinMaxScaler(feature_range = (-1, 1))
-# scaler.fit(features)
-# print(scaler.transform(features))
 
 #plot chroma_cq
 plt.figure()
