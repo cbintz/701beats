@@ -34,6 +34,10 @@ chroma_originals = list() #for plotting
 #beat chroma: B[i][8]
 #chroma_cq: B[i][9]
 #mfcc2: B[i][10]
+#mfcc_chroma: B[i][11]
+#mfcc_chroma_tempo: B[i][11]
+#mfcc_tempo: B[i][11]
+#chroma_tempo: B[i][11]
 
 
 fs = 44100
@@ -94,6 +98,7 @@ for i in range(0,len(audio_files)):
     b[i].append(beat_features)
     b[i].append(beat_chroma)
 
+
     #extract chroma feature and add to feature list
     chroma_cq_og = np.array(librosa.feature.chroma_cqt(b[i][1], sr=sr))
     chroma_originals.append(chroma_cq_og)
@@ -112,17 +117,61 @@ for i in range(0,len(audio_files)):
     # b[i].append(mfcc_scale)
     b[i].append(mfcc2)
 
+    tempo = np.array(tempo)
+    mfcc_chroma = np.concatenate([mfcc2, chroma_cq])
+    mfcc_chroma_tempo = np.concatenate([mfcc_chroma, tempo])
+    mfcc_tempo = np.concatenate([mfcc2, tempo])
+    chroma_tempo = np.concatenate([chroma_cq, tempo])
+    b[i].append(mfcc_chroma)
+    b[i].append(mfcc_chroma_tempo)
+    b[i].append(mfcc_tempo)
+    b[i].append(chroma_tempo)
+    print(mfcc_chroma.shape)
+    print(mfcc_chroma_tempo.shape)
+
 mfcc_total = []
 for i in range(len(b)):
+    x = b[i][10]
+    #print(x)
+
+    #y = np.concatenate(x, b[i][9])
     mfcc_total.append(b[i][10])
+    #mfcc_total.append(y)
 
 mfcc_total = np.array(mfcc_total)
+
+#mfcc_chroma
+mfcc_chroma_total = []
+for i in range(len(b)):
+    mfcc_chroma_total.append(b[i][11])
+
+mfcc_chroma_total = np.array(mfcc_chroma_total)
+
+#mfcc_chroma_tempo
+mfcc_chroma_tempo_total = []
+for i in range(len(b)):
+    mfcc_chroma_tempo_total.append(b[i][12])
+
+mfcc_chroma_tempo_total = np.array(mfcc_chroma_tempo_total)
+
+#mfcc_tempo
+mfcc_tempo_total = []
+for i in range(len(b)):
+    mfcc_tempo_total.append(b[i][13])
+
+mfcc_tempo_total = np.array(mfcc_tempo_total)
+
+#chroma_tempo
+chroma_tempo_total = []
+for i in range(len(b)):
+    chroma_tempo_total.append(b[i][14])
+
+chroma_tempo_total = np.array(chroma_tempo_total)
 
 tempo_total = []
 for i in range(len(b)):
     tempo_total.append(b[i][4])
 tempo_total = np.array(tempo_total)
-print(tempo_total)
 
 chroma_total = []
 for i in range(len(b)):
@@ -169,12 +218,13 @@ for i in range(len(mfcc_songs_cluster1)):
     plt.colorbar()
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
+#show mfcc's of songs in each cluster using mfcc
 mfcc_songs_cluster2 = np.where(kmeans.labels_ == 1)[0]
 plt.figure(figsize= (20,8 ))
 plt.suptitle('MFCC Cluster 2', fontsize=16)
 for i in range(len(mfcc_songs_cluster2)):
-    plt.subplot(len(mfcc_songs_cluster2),1,i+1)
-    librosa.display.specshow(mfcc_originals[mfcc_songs_cluster2[i]], x_axis='time')
+    plt.subplot(len(mfcc_songs_cluster2),1,i+1) # dynamically create subplots
+    librosa.display.specshow(mfcc_originals[mfcc_songs_cluster2[i]], x_axis='time') #create mfcc
     subtitle = "MFCC of Song " + str(mfcc_songs_cluster2[i])
     plt.title(subtitle)
     plt.colorbar()
@@ -234,6 +284,49 @@ for j in range(6):
         print(song, end = ", ")
     print("", end ="\n")
 
+#kmeans with mfcc and chroma
+kmeans4 = KMeans(n_clusters=6, max_iter=100).fit(mfcc_chroma_total)
+for j in range(6):
+    print("mfcc & chroma cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans4.labels_ == j)[0])):
+        song_index = np.where(kmeans4.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
+
+#kmeans with mfcc and chroma and tempo
+kmeans5 = KMeans(n_clusters=6, max_iter=100).fit(mfcc_chroma_tempo_total)
+for j in range(6):
+    print("mfcc & chroma & tempo cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans5.labels_ == j)[0])):
+        song_index = np.where(kmeans5.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
+
+#kmeans with mfcc and tempo
+kmeans6 = KMeans(n_clusters=6, max_iter=100).fit(mfcc_tempo_total)
+for j in range(6):
+    print("mfcc & tempo cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans6.labels_ == j)[0])):
+        song_index = np.where(kmeans6.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
+
+#kmeans with chroma and tempo
+kmeans7 = KMeans(n_clusters=6, max_iter=100).fit(chroma_tempo_total)
+for j in range(6):
+    print("chroma & tempo cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans7.labels_ == j)[0])):
+        song_index = np.where(kmeans7.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
 
 #plot chroma_cq
 plt.figure()
