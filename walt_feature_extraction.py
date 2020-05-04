@@ -349,3 +349,50 @@ plt.colorbar()
 plt.title('MFCC')
 plt.tight_layout()
 plt.show()
+
+
+
+###########################
+###Chroma Plot###
+
+chroma_plot = np.zeros(12*15).reshape(15,12)
+
+chroma_total = []
+for i in range(len(b)):
+
+    x = b[i][5]
+
+    chroma_total.append(b[i][5])
+
+    numberOfWindows = b[i][5].shape[1] #A
+
+    freqVal = b[i][5].argmax( axis = 1 ) #B
+
+    histogram, bin = np.histogram( freqVal, bins = 12 ) #C
+
+    normalized_hist = histogram.reshape( 1, 12 ).astype( float ) / numberOfWindows #D
+
+    chroma_plot[i] = normalized_hist
+
+
+#kmeans with chroma
+kmeans3 = KMeans(n_clusters=6, max_iter=1000).fit(chroma_plot)
+for j in range(6):
+    print("chroma cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans3.labels_ == j)[0])):
+        song_index = np.where(kmeans3.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
+
+
+plt.scatter(chroma_plot[kmeans3.labels_==0,0], chroma_plot[kmeans3.labels_==0,1], c='b')
+plt.scatter(chroma_plot[kmeans3.labels_==1,0], chroma_plot[kmeans3.labels_==1,1], c='r')
+plt.scatter(chroma_plot[kmeans3.labels_==2,0], chroma_plot[kmeans3.labels_==2,1], c='y')
+plt.scatter(chroma_plot[kmeans3.labels_==3,0], chroma_plot[kmeans3.labels_==3,1], c='g')
+plt.scatter(chroma_plot[kmeans3.labels_==4,0], chroma_plot[kmeans3.labels_==4,1], c='k')
+plt.scatter(chroma_plot[kmeans3.labels_==5,0], chroma_plot[kmeans3.labels_==5,1], c='c')
+plt.xlabel('Frequency of Note x')
+plt.ylabel('Frequency of Note y')
+plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'))
