@@ -438,11 +438,56 @@ for j in range(8):
     print("", end ="\n")
 
 
-plt.scatter(chroma_plot[kmeans10.labels_==0,0], chroma_plot[kmeans10.labels_==0,1], c='b')
-plt.scatter(chroma_plot[kmeans10.labels_==1,0], chroma_plot[kmeans10.labels_==1,1], c='r')
-plt.scatter(chroma_plot[kmeans10.labels_==2,0], chroma_plot[kmeans10.labels_==2,1], c='y')
-plt.scatter(chroma_plot[kmeans10.labels_==3,0], chroma_plot[kmeans10.labels_==3,1], c='g')
-plt.scatter(chroma_plot[kmeans10.labels_==4,0], chroma_plot[kmeans10.labels_==4,1], c='k')
-plt.scatter(chroma_plot[kmeans10.labels_==5,0], chroma_plot[kmeans10.labels_==5,1], c='c')
+plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==0,0], mfcc_chroma_tempo[kmeans10.labels_==0,1], c='b')
+plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==1,0], mfcc_chroma_tempo[kmeans10.labels_==1,1], c='r')
+plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==2,0], mfcc_chroma_tempo[kmeans10.labels_==2,1], c='y')
+plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==3,0], mfcc_chroma_tempo[kmeans10.labels_==3,1], c='g')
+plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==4,0], mfcc_chroma_tempo[kmeans10.labels_==4,1], c='k')
+plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==5,0], mfcc_chroma_tempo[kmeans10.labels_==5,1], c='c')
 plt.xlabel('Frequency of Note x')
 plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'))
+
+
+
+###
+#Kmeans with beat features
+
+beat_features_plot = np.zeros(38*21).reshape(21,38)
+
+beat_features_total = []
+for i in range(len(b)):
+
+    beat_features_total.append(b[i][7])
+
+    avgBeatFeatures = b[i][7].mean( axis = 1 ) #B
+
+    print(avgBeatFeatures.shape)
+
+    beat_features_plot[i] = avgBeatFeatures
+
+print(beat_features_plot.shape)
+
+
+#kmeans with beat features
+kmeans11 = KMeans(n_clusters=8, max_iter=1000).fit(beat_features_plot)
+for j in range(8):
+    print("chroma cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans11.labels_ == j)[0])):
+        song_index = np.where(kmeans11.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
+
+
+plt.scatter(beat_features_plot[kmeans11.labels_==0,0], beat_features_plot[kmeans11.labels_==0,1], c='b')
+plt.scatter(beat_features_plot[kmeans11.labels_==1,0], beat_features_plot[kmeans11.labels_==1,1], c='r')
+plt.scatter(beat_features_plot[kmeans11.labels_==2,0], beat_features_plot[kmeans11.labels_==2,1], c='y')
+plt.scatter(beat_features_plot[kmeans11.labels_==3,0], beat_features_plot[kmeans11.labels_==3,1], c='g')
+plt.scatter(beat_features_plot[kmeans11.labels_==4,0], beat_features_plot[kmeans11.labels_==4,1], c='k')
+plt.scatter(beat_features_plot[kmeans11.labels_==5,0], beat_features_plot[kmeans11.labels_==5,1], c='c')
+plt.scatter(beat_features_plot[kmeans11.labels_==6,0], beat_features_plot[kmeans11.labels_==6,1])
+plt.scatter(beat_features_plot[kmeans11.labels_==7,0], beat_features_plot[kmeans11.labels_==7,1])
+plt.xlabel('Frequency of Note x')
+plt.ylabel('Frequency of Note y')
+plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7'))
