@@ -396,3 +396,53 @@ plt.scatter(chroma_plot[kmeans3.labels_==5,0], chroma_plot[kmeans3.labels_==5,1]
 plt.xlabel('Frequency of Note x')
 plt.ylabel('Frequency of Note y')
 plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'))
+
+
+
+
+#############################
+#Kmeans with chroma, tempo, and mfcc_chroma
+
+mfcc_plot = np.zeros(13*21).reshape(21,13)
+
+mfcc_total = []
+for i in range(len(b)):
+
+    mfcc_total.append(b[i][6])
+
+    avgMfcc = b[i][6].mean( axis = 1 ) #B
+
+    mfcc_plot[i] = avgMfcc
+
+
+tempo_total = []
+for i in range(len(b)):
+    tempo_total.append(b[i][4])
+tempo_total = np.array(tempo_total)
+
+
+mfcc_chroma_tempo = np.concatenate((mfcc_plot, chroma_plot, tempo_total), axis = 1)
+
+print(mfcc_chroma_tempo.shape)
+
+
+#kmeans with mfcc_chroma_tempo
+kmeans10 = KMeans(n_clusters=8, max_iter=1000).fit(mfcc_chroma_tempo)
+for j in range(8):
+    print("chroma cluster " + str(j+1) + ": ", end = "")
+    for i in range(len(np.where(kmeans10.labels_ == j)[0])):
+        song_index = np.where(kmeans10.labels_ == j)[0][i]
+        song_path = audio_files[song_index]
+        song = song_path[8:-4]
+        print(song, end = ", ")
+    print("", end ="\n")
+
+
+plt.scatter(chroma_plot[kmeans10.labels_==0,0], chroma_plot[kmeans10.labels_==0,1], c='b')
+plt.scatter(chroma_plot[kmeans10.labels_==1,0], chroma_plot[kmeans10.labels_==1,1], c='r')
+plt.scatter(chroma_plot[kmeans10.labels_==2,0], chroma_plot[kmeans10.labels_==2,1], c='y')
+plt.scatter(chroma_plot[kmeans10.labels_==3,0], chroma_plot[kmeans10.labels_==3,1], c='g')
+plt.scatter(chroma_plot[kmeans10.labels_==4,0], chroma_plot[kmeans10.labels_==4,1], c='k')
+plt.scatter(chroma_plot[kmeans10.labels_==5,0], chroma_plot[kmeans10.labels_==5,1], c='c')
+plt.xlabel('Frequency of Note x')
+plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'))
