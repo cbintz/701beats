@@ -13,11 +13,6 @@ import matplotlib.pyplot as pp
 
 audio_files = glob.glob('./audio/*.wav')
 
-# 0, 3, 8 = rap
-# 1, 4, 6 = edm
-# 2, 5, 7 = pop
-# should make this usable for labels for plots
-
 b = list()
 mfcc_originals = list() #for plotting
 chroma_originals = list() #for plotting
@@ -126,8 +121,6 @@ for i in range(0,len(audio_files)):
     b[i].append(mfcc_chroma_tempo)
     b[i].append(mfcc_tempo)
     b[i].append(chroma_tempo)
-    print(mfcc_chroma.shape)
-    print(mfcc_chroma_tempo.shape)
 
 mfcc_total = []
 for i in range(len(b)):
@@ -355,7 +348,7 @@ plt.show()
 ###########################
 ###Chroma Plot###
 
-chroma_plot = np.zeros(12*15).reshape(15,12)
+chroma_plot = np.zeros(12*21).reshape(21,12)
 
 chroma_total = []
 for i in range(len(b)):
@@ -393,10 +386,12 @@ plt.scatter(chroma_plot[kmeans3.labels_==2,0], chroma_plot[kmeans3.labels_==2,1]
 plt.scatter(chroma_plot[kmeans3.labels_==3,0], chroma_plot[kmeans3.labels_==3,1], c='g')
 plt.scatter(chroma_plot[kmeans3.labels_==4,0], chroma_plot[kmeans3.labels_==4,1], c='k')
 plt.scatter(chroma_plot[kmeans3.labels_==5,0], chroma_plot[kmeans3.labels_==5,1], c='c')
+plt.scatter(chroma_plot[kmeans3.labels_==6,0], chroma_plot[kmeans3.labels_==6,1], c='c')
+plt.scatter(chroma_plot[kmeans3.labels_==7,0], chroma_plot[kmeans3.labels_==7,1], c='c')
 plt.xlabel('Frequency of Note x')
 plt.ylabel('Frequency of Note y')
-plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'))
-
+plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7'))
+plt.show()
 
 
 
@@ -423,13 +418,12 @@ tempo_total = np.array(tempo_total)
 
 mfcc_chroma_tempo = np.concatenate((mfcc_plot, chroma_plot, tempo_total), axis = 1)
 
-print(mfcc_chroma_tempo.shape)
 
 
 #kmeans with mfcc_chroma_tempo
 kmeans10 = KMeans(n_clusters=8, max_iter=1000).fit(mfcc_chroma_tempo)
 for j in range(8):
-    print("chroma cluster " + str(j+1) + ": ", end = "")
+    print("chroma average and mfcc average and tempo cluster " + str(j+1) + ": ", end = "")
     for i in range(len(np.where(kmeans10.labels_ == j)[0])):
         song_index = np.where(kmeans10.labels_ == j)[0][i]
         song_path = audio_files[song_index]
@@ -444,9 +438,11 @@ plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==2,0], mfcc_chroma_tempo[kmeans10
 plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==3,0], mfcc_chroma_tempo[kmeans10.labels_==3,1], c='g')
 plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==4,0], mfcc_chroma_tempo[kmeans10.labels_==4,1], c='k')
 plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==5,0], mfcc_chroma_tempo[kmeans10.labels_==5,1], c='c')
+plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==6,0], mfcc_chroma_tempo[kmeans10.labels_==6,1], c='c')
+plt.scatter(mfcc_chroma_tempo[kmeans10.labels_==7,0], mfcc_chroma_tempo[kmeans10.labels_==7,1], c='c')
 plt.xlabel('Frequency of Note x')
-plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'))
-
+plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7'))
+plt.show()
 
 
 ###
@@ -461,11 +457,8 @@ for i in range(len(b)):
 
     avgBeatFeatures = b[i][7].mean( axis = 1 ) #B
 
-    print(avgBeatFeatures.shape)
-
     beat_features_plot[i] = avgBeatFeatures
 
-print(beat_features_plot.shape)
 
 
 #kmeans with beat features
@@ -491,3 +484,4 @@ plt.scatter(beat_features_plot[kmeans11.labels_==7,0], beat_features_plot[kmeans
 plt.xlabel('Frequency of Note x')
 plt.ylabel('Frequency of Note y')
 plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7'))
+plt.show()
