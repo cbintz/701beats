@@ -355,7 +355,7 @@ plt.show()
 ###########################
 ###Chroma Plot###
 
-chroma_plot = np.zeros(12*15).reshape(15,12)
+chroma_plot = np.zeros(12*21).reshape(21,12)
 
 chroma_total = []
 for i in range(len(b)):
@@ -491,3 +491,152 @@ plt.scatter(beat_features_plot[kmeans11.labels_==7,0], beat_features_plot[kmeans
 plt.xlabel('Frequency of Note x')
 plt.ylabel('Frequency of Note y')
 plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7'))
+
+
+####
+from math import isclose
+
+for i in range(3,len(t)):
+
+    print(t[i][0])
+
+    thrown_tempo = t[i][3]
+    thrown_onset_frames = t[i][7]
+    thrown_beat_frames = t[i][8]
+
+    beats_per_second = thrown_tempo/60
+    secs_per_tempo_event = 1/beats_per_second
+
+    thrown_onset_times = t[i][5]
+    thrown_beat_times = t[i][6]
+
+    print(thrown_beat_times)
+    print(thrown_onset_times)
+
+    k = 0
+    for j in range(0,len(thrown_beat_times)):
+
+        #print("j: " + str(thrown_beat_times[j]))
+
+
+
+
+
+        while(thrown_onset_times[k] < thrown_beat_times[j]):
+
+            #print("k: " + str(thrown_onset_times[k]))
+            #print(str(thrown_beat_times[j] - (secs_per_tempo_event/4)*2))
+
+
+            if(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/4)*1, rel_tol = .03)):
+                print("3/Quarter Pulse")
+            elif(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/4)*2, rel_tol = .03)):
+                print("2/Quarter Pulse")
+            elif(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/4)*3, rel_tol = .03)):
+                print("1/Quarter Pulse")
+
+
+            else:
+
+                if(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/8)*1, rel_tol = .03)):
+                    print("7/Eighth Pulse")
+                elif(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/8)*2, rel_tol = .03)):
+                    print("6/Eighth Pulse")
+                elif(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/8)*3, rel_tol = .03)):
+                    print("5/Eighth Pulse")
+                elif(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/8)*2, rel_tol = .03)):
+                    print("4/Eighth Pulse")
+                elif(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/8)*3, rel_tol = .03)):
+                    print("3/Eighth Pulse")
+                elif(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/8)*2, rel_tol = .03)):
+                    print("2/Eighth Pulse")
+                elif(isclose(thrown_onset_times[k], thrown_beat_times[j] - (secs_per_tempo_event/8)*3, rel_tol = .03)):
+                    print("1/Eighth Pulse")
+
+            k+=1
+
+        if(isclose(thrown_onset_times[k], thrown_beat_times[j], rel_tol = .03)):
+                print("Tempo Event")
+
+#####
+from IPython.display import Audio, display
+
+thrown_samples = glob.glob('./Thrown/*.wav')
+
+
+#t[0]: song filepath
+#t[1]: percussive sample
+#t[2]: harmonic sample
+#t[3]: tempo
+#t[4]: sample
+#t[5]: onset times
+#t[6]: beat times
+#t[7]: onset frames
+#t[8]: beat frames
+
+
+t = list()
+
+fs = 44100
+for i in range(0,len(thrown_samples)):
+    #create list to store song data
+    sample_data = list()
+    t.append(sample_data)
+    t[i].append(thrown_samples[i])
+
+    #load the song data
+    sample, sr = librosa.load(thrown_samples[i], duration = 10)
+
+    #set hop length
+    hop_length = 512
+
+    #separate song into harmonic and percussive components
+    sample_harmonic, sample_percussive = librosa.effects.hpss(sample)
+
+    #beat track on the percussive signal
+    tempo, beat_times = librosa.beat.beat_track(y=sample_percussive,
+                                                 sr=sr,
+                                                 units = 'time')
+
+    #beat track on the percussive signal
+    tempo, beat_frames = librosa.beat.beat_track(y=sample_percussive,
+                                                 sr=sr)
+
+    onset_frames = librosa.onset.onset_detect(sample_percussive,
+                                              sr=sr,
+                                              wait=1,
+                                              pre_avg=1,
+                                              post_avg=1,
+                                              pre_max=1,
+                                              post_max=1)
+
+    onset_times = librosa.frames_to_time(onset_frames)
+
+
+    t[i].append(sample_percussive)
+    t[i].append(sample_harmonic)
+    t[i].append(tempo)
+    t[i].append(sample)
+    t[i].append(onset_times)
+    t[i].append(beat_times)
+    t[i].append(onset_frames)
+    t[i].append(beat_frames)
+
+
+    clicks = librosa.clicks(frames=onset_frames, sr=sr, length=len(sample))
+
+    #librosa.output.write_wav('./Thrown/test_clicks' + str(i) + '.wav', t[i][4] + clicks, sr)
+
+print("done")
+
+
+##### Combining Beat and Onset Events
+
+plt.title("Combining Beat and Onset Events")
+plt.figure(figsize=(14, 5))
+plt.title("Beat and Onset Events for Thrown by Kiasmos")
+librosa.display.waveplot(t[3][1], alpha=0.6)
+plt.vlines(t[0][6], -1, 1, color='r')
+plt.vlines(t[0][5], -1, 1, color='y')
+plt.ylim(-1, 1)
+plt.xlim(0, 5)
