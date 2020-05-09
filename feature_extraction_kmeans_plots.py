@@ -103,13 +103,7 @@ for i in range(0,len(audio_files)):
     #extract mfccs and add to feature list
     mfcc_og = np.array(librosa.feature.mfcc(b[i][1], sr=sr))
     mfcc_originals.append(mfcc_og)
-    # feature scaling made clusters more inaccurate, commenting out for now
-    # scaler = MinMaxScaler(feature_range = (-1, 1))
-    # scaler.fit(mfcc)
-    # mfcc_scale = scaler.transform(mfcc)
-    # mfcc_scale = mfcc_scale.reshape(25840)
     mfcc2 = mfcc_og.reshape(25840)
-    # b[i].append(mfcc_scale)
     b[i].append(mfcc2)
 
     tempo = np.array(tempo)
@@ -180,14 +174,6 @@ x2 = []
 for i in range(len(b)):
     x2.append(np.linspace(0, 1, 25840))
 x2 = np.array(x2)
-
-# fig2, ax2 = plt.subplots()
-# ax2.plot(chroma_total, x1)
-# plt.show()
-# plt.plot(mfcc_total, x2)
-
-
-#plt.scatter(mfcc_total, chroma_total)
 
 #kmeans with mfcc
 kmeans = KMeans(n_clusters=6, max_iter=100).fit(mfcc_total)
@@ -445,7 +431,7 @@ plt.legend(('Class 0', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'C
 plt.show()
 
 
-###
+
 #Kmeans with beat features
 
 beat_features_plot = np.zeros(38*21).reshape(21,38)
